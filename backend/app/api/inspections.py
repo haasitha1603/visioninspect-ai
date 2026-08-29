@@ -76,3 +76,13 @@ def upload_inspection(
         "image_name": inspection.image_name,
         "status": inspection.status
     }
+
+@router.get("")
+def get_inspections(
+    db: Session = Depends(get_db)
+):
+    inspections = db.query(Inspection).order_by(
+        Inspection.created_at.desc()
+    ).all()
+
+    return inspections
