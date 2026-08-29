@@ -14,3 +14,15 @@ The dataset pipeline supports:
 - Basic image preprocessing
 - Image resizing to 256 × 256
 - RGB conversion
+
+## Image Upload
+
+The inspection API allows users to upload JPG, JPEG and PNG images.
+
+Uploaded images are:
+- Validated by file extension
+- Assigned a unique filename
+- Stored in the local uploads directory
+- Linked to an inspection record in PostgreSQL
+
+The inspection initially receives a `Pending` status until the inspection pipeline processes it.

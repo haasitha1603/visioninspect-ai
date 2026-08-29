@@ -1,4 +1,5 @@
 from app.api.auth import router as auth_router
+from app.api.inspections import router as inspection_router
 from fastapi import FastAPI
 from app.database import engine, Base
 from app.models.models import User, Inspection
@@ -10,6 +11,7 @@ app = FastAPI(
 )
 Base.metadata.create_all(bind=engine)
 app.include_router(auth_router)
+app.include_router(inspection_router)
 @app.get("/")
 def root():
     return {

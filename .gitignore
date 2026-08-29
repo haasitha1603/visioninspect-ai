@@ -236,3 +236,4 @@ frontend/node_modules/
 frontend/dist/
 dataset/raw/
 dataset/processed/
+uploads/
