@@ -1,94 +1,149 @@
-# visioninspect-ai
-AI-powered manufacturing defect detection and quality inspection platform.
+# VisionInspect AI — Industrial Manufacturing Defect Detection & Quality Inspection Platform
 
-## Dataset
+**VisionInspect AI** is an AI-powered manufacturing quality control platform designed for automated product image inspection, quantitative image quality analysis, image preprocessing, and computer vision anomaly detection using the **MVTec AD dataset**.
 
-VisionInspect AI uses the MVTec AD dataset for industrial anomaly inspection.
+---
 
-The dataset is stored locally and is not committed to the GitHub repository because of its large size.
+## 🌟 Key Features
 
-The dataset pipeline supports:
-- Dataset category discovery
-- Image loading
-- Image validation
-- Basic image preprocessing
-- Image resizing to 256 × 256
-- RGB conversion
+### Milestone 1 — Core Setup & Infrastructure
+- **Role-Based Authentication**: JWT authentication supporting `QUALITY_ENGINEER` and `FACTORY_SUPERVISOR` roles with password hashing (`bcrypt`).
+- **PostgreSQL Database**: SQLAlchemy ORM storing user accounts and detailed inspection logs.
+- **Product Image Upload**: Multi-format image ingestion (JPG, JPEG, PNG) with UUID filename generation and static file serving.
+- **Developer Documentation**: FastAPI Swagger API documentation available at `http://127.0.0.1:8000/docs`.
 
-## Image Upload
+### Milestone 2 — Image Processing & Defect Detection Engine
+- **Image Preprocessing Pipeline**: Built with OpenCV & NumPy:
+  - Image format verification & corruption check
+  - RGB color space conversion
+  - Standardized image resizing to 256×256
+  - Noise reduction via Gaussian Blurring
+  - Contrast enhancement using CLAHE on luminance channels
+  - Matrix normalization (0.0 to 1.0)
+- **Quantitative Quality Analysis**: Calculates real metrics directly from uploaded image bytes:
+  - Image resolution (width × height, channels)
+  - Brightness (mean pixel luminance 0-255)
+  - Contrast (luminance standard deviation)
+  - Sharpness score (Laplacian variance)
+  - File size calculation (KB)
+  - Overall quality grade (`Good`, `Acceptable`, `Poor`)
+- **AI Defect Detection Engine**:
+  - Feature extraction pipeline combining RGB/HSV color histograms, grid-wise spatial mean/std features, and Sobel gradient energy.
+  - Anomaly Detector (`IsolationForest` + `StandardScaler`) trained on normal manufacturing images from MVTec AD (`bottle`, `cable`, `capsule`, `metal_nut`, `carpet`, etc.).
+  - Computes real prediction (`Normal` vs `Anomaly`), model confidence percentage, and inference speed in milliseconds.
+- **Industrial Dashboard & Inspection Reports**:
+  - KPI summary metrics: Total Inspections, Normal Count, Anomaly Count, Pass Rate (%), Average Speed (ms).
+  - Search and filter bar by prediction status and file name.
+  - Interactive Inspection Report view with side-by-side comparison of Raw Upload Image vs CV Preprocessed Image.
 
-The inspection API allows users to upload JPG, JPEG and PNG images.
+---
 
-Uploaded images are:
-- Validated by file extension
-- Assigned a unique filename
-- Stored in the local uploads directory
-- Linked to an inspection record in PostgreSQL
+## 🛠️ Technology Stack
 
-The inspection initially receives a `Pending` status until the inspection pipeline processes it.
+- **Backend**: Python 3.13, FastAPI, Uvicorn, SQLAlchemy, PostgreSQL, Pydantic, Python-JOSE, Passlib
+- **Machine Learning & Computer Vision**: OpenCV, scikit-learn, NumPy, PIL, SciPy
+- **Frontend**: React 19, Vite, JavaScript, Custom Industrial CSS Theme
+- **Dataset**: MVTec Anomaly Detection (MVTec AD)
 
-# VisionInspect AI
+---
 
-AI-powered manufacturing quality inspection platform.
+## 🚀 Getting Started
 
-## Project Overview
+### 1. Prerequisites
+- Python 3.10+
+- Node.js 18+
+- PostgreSQL server running locally at `localhost:5432` with database `visioninspect`
 
-VisionInspect AI is a manufacturing quality inspection platform designed to support image-based inspection workflows.
+### 2. Database Configuration
+Ensure your `.env` file exists at `visioninspect-ai/backend/.env`:
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/visioninspect
+```
 
-## Milestone 1
+### 3. Backend Setup & Run
+```bash
+# Navigate to backend folder
+cd visioninspect-ai/backend
 
-Milestone 1 establishes the project foundation, including:
+# Activate virtual environment
+.\venv\Scripts\activate   # Windows
 
-- System architecture
-- PostgreSQL database
-- Authentication
-- Role-based access
-- MVTec AD dataset integration
-- Image preprocessing
-- Inspection image upload
-- Inspection dashboard
+# Install dependencies
+pip install -r requirements.txt
 
-## Technology Stack
+# Run model training on MVTec dataset (optional, auto-trains if model is missing)
+python -m app.ml.train_model
 
-### Backend
-- Python
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
+# Launch FastAPI backend server
+uvicorn app.main:app --reload
+```
+The FastAPI backend will run at: `http://127.0.0.1:8000`
+Swagger UI is accessible at: `http://127.0.0.1:8000/docs`
 
-### Frontend
-- React
+### 4. Frontend Setup & Run
+```bash
+# Navigate to frontend folder
+cd visioninspect-ai/frontend
 
-### Dataset
-- MVTec AD
+# Install dependencies
+npm install
 
-## Authentication
+# Start Vite dev server
+npm run dev
+```
+The React application will run at: `http://localhost:5173`
 
-The platform supports:
+---
 
-- QUALITY_ENGINEER
-- FACTORY_SUPERVISOR
+## 📡 Key API Endpoints
 
-Passwords are stored using secure password hashing.
+- `POST /auth/register` — Register a new inspector account
+- `POST /auth/login` — Sign in and obtain JWT access token
+- `POST /inspections/upload` — Upload image, execute quality check, preprocessing, and AI defect detection
+- `GET /inspections` — List all inspection records ordered by timestamp
+- `GET /inspections/{id}` — Retrieve detailed inspection report with preprocessed image URLs
+- `POST /inspections/{id}/analyze` — Re-run analysis on an existing record
 
-## Dataset
+---
 
-MVTec AD is used as the industrial anomaly inspection dataset.
+## 📂 Project Structure
 
-The dataset is kept locally and excluded from GitHub because of its size.
-
-## Inspection Workflow
-
-1. User logs in
-2. User uploads an inspection image
-3. Backend validates the image
-4. Image is stored
-5. Inspection record is created
-6. Inspection status is set to Pending
-7. Inspection appears on the dashboard
-
-## Current Status
-
-Milestone 1 completed.
-
-AI-based defect detection and model training are planned for the next milestone.
+```text
+visioninspect-ai/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth.py          # Auth API endpoints (Register/Login)
+│   │   │   └── inspections.py   # Inspection upload & analytics endpoints
+│   │   ├── auth/                # Password hashing & JWT generation
+│   │   ├── ml/                  # AI Defect Detector & MVTec training workflow
+│   │   │   ├── defect_detector.py
+│   │   │   └── train_model.py
+│   │   ├── models/              # SQLAlchemy database models (User, Inspection)
+│   │   ├── schemas/             # Pydantic request/response schemas
+│   │   ├── services/            # Preprocessing & Image Quality Analysis services
+│   │   │   ├── preprocessing_service.py
+│   │   │   └── quality_service.py
+│   │   ├── database.py          # DB engine & Session setup
+│   │   ├── dataset_loader.py    # MVTec AD dataset helper
+│   │   └── main.py              # FastAPI app instance & static file mounting
+│   ├── uploads/                 # Storage for raw uploads and preprocessed images
+│   └── .env
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── InspectionReportModal.jsx
+│   │   ├── pages/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Upload.jsx
+│   │   │   └── Login.jsx
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── index.css
+│   │   └── main.jsx
+│   └── package.json
+│
+├── dataset/                     # MVTec AD Dataset root
+└── README.md
+```

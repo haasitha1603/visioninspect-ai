@@ -237,3 +237,4 @@ frontend/dist/
 dataset/raw/
 dataset/processed/
 uploads/
+*.pkl
