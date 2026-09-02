@@ -4,7 +4,7 @@ import shutil
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -12,6 +12,7 @@ from app.models.models import Inspection
 from app.services.quality_service import analyze_image_quality
 from app.services.preprocessing_service import preprocess_image_pipeline
 from app.ml.defect_detector import detector_instance
+from app.auth.auth import decode_access_token
 
 
 router = APIRouter(
@@ -37,11 +38,34 @@ def get_db():
         db.close()
 
 
+def verify_quality_engineer(
+    authorization: str = Header(None),
+    user_role: str = Form(default=None)
+):
+    role = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ")[1]
+        payload = decode_access_token(token)
+        if payload:
+            role = payload.get("role")
+
+    if not role and user_role:
+        role = user_role
+
+    if role and role.upper() in ["FACTORY_SUPERVISOR", "SUPERVISOR"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Factory Supervisors are not authorized to upload or start inspections."
+        )
+
+
 @router.post("/upload")
 def upload_inspection(
     user_id: int = Form(default=1),
+    user_role: str = Form(default=None),
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _role_check: None = Depends(verify_quality_engineer)
 ):
     start_time = time.time()
     extension = Path(file.filename).suffix.lower()

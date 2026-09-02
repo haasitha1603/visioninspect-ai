@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import InspectionReportModal from "../components/InspectionReportModal";
 
-function Dashboard({ onViewUpload }) {
+function Dashboard({ onViewUpload, user, isSupervisor }) {
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +35,7 @@ function Dashboard({ onViewUpload }) {
   const totalCount = inspections.length;
   const normalCount = inspections.filter((i) => i.prediction === "Normal").length;
   const anomalyCount = inspections.filter((i) => i.prediction === "Anomaly").length;
+  const pendingCount = inspections.filter((i) => i.status === "Pending").length;
   const passRate = totalCount > 0 ? ((normalCount / totalCount) * 100).toFixed(1) : 0;
   
   const avgTime = totalCount > 0
@@ -78,16 +79,26 @@ function Dashboard({ onViewUpload }) {
       {/* Header Banner */}
       <div className="dashboard-header">
         <div>
-          <h1 className="page-title">Inspection Dashboard</h1>
-          <p className="page-subtitle">Real-time manufacturing quality metrics and computer vision anomaly monitoring.</p>
+          <h1 className="page-title">
+            {isSupervisor ? "Inspection Monitoring & Oversight" : "Quality Inspection Dashboard"}
+          </h1>
+          <p className="page-subtitle">
+            {isSupervisor
+              ? "Supervise production quality, audit pending & completed inspections, and review defect analytics."
+              : "Perform image quality analysis, run AI anomaly detection models, and track manufacturing results."}
+          </p>
         </div>
         <div className="dashboard-actions">
           <button className="btn btn-secondary" onClick={fetchInspections}>
             🔄 Refresh Data
           </button>
-          <button className="btn btn-primary" onClick={onViewUpload}>
-            + New Inspection Upload
-          </button>
+
+          {/* Hide Upload button for Factory Supervisor */}
+          {!isSupervisor && (
+            <button className="btn btn-primary" onClick={onViewUpload}>
+              + New Inspection Upload
+            </button>
+          )}
         </div>
       </div>
 
@@ -99,16 +110,16 @@ function Dashboard({ onViewUpload }) {
             <span className="stat-icon">📊</span>
           </div>
           <div className="stat-value">{totalCount}</div>
-          <div className="stat-footer text-muted">Total processed images</div>
+          <div className="stat-footer text-muted">Total recorded product images</div>
         </div>
 
         <div className="stat-card">
           <div className="stat-header">
-            <span className="stat-title">Normal / Passed</span>
+            <span className="stat-title">Passed Quality</span>
             <span className="stat-icon icon-emerald">✓</span>
           </div>
           <div className="stat-value text-normal">{normalCount}</div>
-          <div className="stat-footer text-emerald">{passRate}% Pass Rate</div>
+          <div className="stat-footer text-emerald">{passRate}% Quality Pass Rate</div>
         </div>
 
         <div className="stat-card">
@@ -122,14 +133,25 @@ function Dashboard({ onViewUpload }) {
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-header">
-            <span className="stat-title">Avg Inspection Time</span>
-            <span className="stat-icon">⚡</span>
+        {isSupervisor ? (
+          <div className="stat-card">
+            <div className="stat-header">
+              <span className="stat-title">Pending Queue</span>
+              <span className="stat-icon icon-amber">⏳</span>
+            </div>
+            <div className="stat-value text-pending">{pendingCount}</div>
+            <div className="stat-footer text-muted">Awaiting analysis review</div>
           </div>
-          <div className="stat-value">{avgTime} ms</div>
-          <div className="stat-footer text-muted">High-performance AI inference</div>
-        </div>
+        ) : (
+          <div className="stat-card">
+            <div className="stat-header">
+              <span className="stat-title">Avg Inference Speed</span>
+              <span className="stat-icon">⚡</span>
+            </div>
+            <div className="stat-value">{avgTime} ms</div>
+            <div className="stat-footer text-muted">Real-time CV execution</div>
+          </div>
+        )}
       </div>
 
       {/* Controls & Search */}
@@ -163,6 +185,12 @@ function Dashboard({ onViewUpload }) {
           >
             Anomalies ({anomalyCount})
           </button>
+          <button
+            className={`filter-btn ${filter === "PENDING" ? "active" : ""}`}
+            onClick={() => setFilter("PENDING")}
+          >
+            Pending ({pendingCount})
+          </button>
         </div>
       </div>
 
@@ -181,7 +209,9 @@ function Dashboard({ onViewUpload }) {
         ) : filteredInspections.length === 0 ? (
           <div className="state-container">
             <p>No inspections found matching criteria.</p>
-            <button className="btn btn-primary" onClick={onViewUpload}>Upload First Image</button>
+            {!isSupervisor && (
+              <button className="btn btn-primary" onClick={onViewUpload}>Upload First Image</button>
+            )}
           </div>
         ) : (
           <div className="table-responsive">
@@ -192,7 +222,7 @@ function Dashboard({ onViewUpload }) {
                   <th>Image</th>
                   <th>Image Name</th>
                   <th>Quality Grade</th>
-                  <th>AI Prediction</th>
+                  <th>AI Decision</th>
                   <th>Confidence</th>
                   <th>Speed</th>
                   <th>Timestamp</th>
@@ -230,7 +260,7 @@ function Dashboard({ onViewUpload }) {
                             {isAnomaly ? "⚠️ Anomaly" : "✓ Normal"}
                           </span>
                         ) : (
-                          <span className="badge-pending">Pending</span>
+                          <span className="badge-pending">⏳ Pending</span>
                         )}
                       </td>
                       <td>

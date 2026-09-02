@@ -14,7 +14,8 @@ function App() {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
       } catch (e) {
         localStorage.removeItem("user");
       }
@@ -27,18 +28,22 @@ function App() {
       .catch(() => setBackendHealthy(false));
   }, []);
 
+  const isSupervisor = user?.role === "FACTORY_SUPERVISOR" || user?.role === "factory_supervisor";
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
+    setPage("dashboard");
   };
 
   const handleLoginSuccess = (loginData) => {
-    setUser({
+    const userData = {
       id: loginData.user_id,
       name: loginData.name,
       role: loginData.role
-    });
+    };
+    setUser(userData);
     setPage("dashboard");
   };
 
@@ -52,7 +57,9 @@ function App() {
           </div>
           <div className="brand-text">
             <span className="brand-title">VISIONINSPECT AI</span>
-            <span className="brand-subtitle">Industrial Quality Control & CV Analytics</span>
+            <span className="brand-subtitle">
+              {isSupervisor ? "Supervisor Quality Oversight" : "Industrial Quality Control"}
+            </span>
           </div>
         </div>
 
@@ -61,14 +68,18 @@ function App() {
             className={`nav-link ${page === "dashboard" ? "active" : ""}`}
             onClick={() => setPage("dashboard")}
           >
-            📊 Inspection Dashboard
+            {isSupervisor ? "📈 Inspection Monitoring" : "📊 Inspection Dashboard"}
           </button>
-          <button
-            className={`nav-link ${page === "upload" ? "active" : ""}`}
-            onClick={() => setPage("upload")}
-          >
-            📤 Upload Inspection
-          </button>
+          
+          {/* Hide Upload link from Factory Supervisor */}
+          {!isSupervisor && (
+            <button
+              className={`nav-link ${page === "upload" ? "active" : ""}`}
+              onClick={() => setPage("upload")}
+            >
+              📤 Upload Inspection
+            </button>
+          )}
         </nav>
 
         <div className="nav-right">
@@ -83,7 +94,9 @@ function App() {
             <div className="user-profile-badge">
               <div className="user-info">
                 <span className="user-name">{user.name}</span>
-                <span className="user-role">{user.role?.replace("_", " ")}</span>
+                <span className="user-role">
+                  {user.role === "FACTORY_SUPERVISOR" ? "Factory Supervisor" : "Quality Engineer"}
+                </span>
               </div>
               <button className="btn btn-sm btn-outline" onClick={handleLogout}>
                 Sign Out
@@ -101,17 +114,21 @@ function App() {
       <main className="main-content">
         {page === "login" ? (
           <Login onLoginSuccess={handleLoginSuccess} />
-        ) : page === "upload" ? (
-          <Upload onViewDashboard={() => setPage("dashboard")} />
+        ) : page === "upload" && !isSupervisor ? (
+          <Upload onViewDashboard={() => setPage("dashboard")} user={user} />
         ) : (
-          <Dashboard onViewUpload={() => setPage("upload")} />
+          <Dashboard
+            onViewUpload={() => setPage("upload")}
+            user={user}
+            isSupervisor={isSupervisor}
+          />
         )}
       </main>
 
       {/* Industrial Footer */}
       <footer className="footer">
         <div className="footer-content">
-          <span>VisionInspect AI v1.0 • Manufacturing Defect Detection & Quality Control System</span>
+          <span>VisionInspect AI • Manufacturing Defect Detection & Quality Control System</span>
           <span>FastAPI • React • PostgreSQL • OpenCV • MVTec AD Dataset</span>
         </div>
       </footer>

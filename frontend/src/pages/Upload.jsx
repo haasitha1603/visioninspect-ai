@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import InspectionReportModal from "../components/InspectionReportModal";
 
-function Upload({ onViewDashboard }) {
+function Upload({ onViewDashboard, user }) {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -10,10 +10,11 @@ function Upload({ onViewDashboard }) {
   const [errorMessage, setErrorMessage] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
 
+  const isSupervisor = user?.role === "FACTORY_SUPERVISOR" || user?.role === "factory_supervisor";
+
   const handleFileSelect = (selectedFile) => {
     if (!selectedFile) return;
 
-    // Validate type
     const validTypes = ["image/jpeg", "image/jpg", "image/png"];
     if (!validTypes.includes(selectedFile.type)) {
       setErrorMessage("Please select a valid JPG, JPEG, or PNG image.");
@@ -43,23 +44,35 @@ function Upload({ onViewDashboard }) {
       return;
     }
 
+    if (isSupervisor) {
+      setErrorMessage("Factory Supervisors are not authorized to upload or start new inspections.");
+      return;
+    }
+
     setLoading(true);
     setErrorMessage(null);
     setResult(null);
     setStep(1);
 
     const formData = new FormData();
-    formData.append("user_id", "1");
+    formData.append("user_id", user?.id || "1");
+    formData.append("user_role", user?.role || "QUALITY_ENGINEER");
     formData.append("file", file);
 
+    const token = localStorage.getItem("token");
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     try {
-      // Simulate visual pipeline step updates
       setTimeout(() => setStep(2), 300);
       setTimeout(() => setStep(3), 600);
       setTimeout(() => setStep(4), 900);
 
       const response = await fetch("http://127.0.0.1:8000/inspections/upload", {
         method: "POST",
+        headers: headers,
         body: formData,
       });
 
@@ -88,12 +101,36 @@ function Upload({ onViewDashboard }) {
     setStep(0);
   };
 
+  if (isSupervisor) {
+    return (
+      <div className="page-container">
+        <div className="upload-header">
+          <h1 className="page-title">Access Restricted</h1>
+          <button className="btn btn-secondary" onClick={onViewDashboard}>
+            ← Back to Monitoring Dashboard
+          </button>
+        </div>
+        <div className="upload-card" style={{ textAlign: "center", padding: "40px" }}>
+          <h3>🛡️ Factory Supervisor Oversight View</h3>
+          <p className="text-muted" style={{ marginTop: "10px" }}>
+            Factory Supervisors monitor inspection activity and review quality reports. Image acquisition & upload execution is restricted to Quality Engineers.
+          </p>
+          <div style={{ marginTop: "20px" }}>
+            <button className="btn btn-primary" onClick={onViewDashboard}>
+              Return to Monitoring Overview
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
       <div className="upload-header">
         <div>
           <h1 className="page-title">Upload Manufacturing Image</h1>
-          <p className="page-subtitle">Run automated quality analysis, image preprocessing, and AI defect detection.</p>
+          <p className="page-subtitle">Run automated quality analysis, CV image preprocessing, and AI defect detection.</p>
         </div>
         <button className="btn btn-secondary" onClick={onViewDashboard}>
           ← Back to Dashboard
