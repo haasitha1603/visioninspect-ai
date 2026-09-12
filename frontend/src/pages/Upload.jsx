@@ -223,16 +223,16 @@ function Upload({ onViewDashboard, user }) {
             <div className={`step-item ${step >= 3 ? "step-active" : ""}`}>
               <div className="step-num">3</div>
               <div className="step-label">
-                <strong>CV Preprocessing</strong>
-                <p>Gaussian Denoising & CLAHE</p>
+                <strong>CV Preprocessing & Categorization</strong>
+                <p>Gaussian Denoising & Sobel Gradient</p>
               </div>
             </div>
 
             <div className={`step-item ${step >= 4 ? "step-active" : ""}`}>
               <div className="step-num">4</div>
               <div className="step-label">
-                <strong>AI Defect Model</strong>
-                <p>Feature extraction & anomaly score</p>
+                <strong>AI Defect Model & Severity Engine</strong>
+                <p>Weighted scoring & risk assessment</p>
               </div>
             </div>
           </div>
@@ -245,25 +245,25 @@ function Upload({ onViewDashboard, user }) {
                   <span className="result-id">INSPECTION RECORD #{result.inspection_id}</span>
                   <h3 className="result-title">{result.image_name}</h3>
                 </div>
-                <span className={`prediction-badge ${result.prediction === "Anomaly" ? "badge-anomaly" : "badge-normal"}`}>
-                  {result.prediction === "Anomaly" ? "⚠️ Anomaly Detected" : "✓ Normal Quality"}
+                <span className={`status-tag tag-${(result.quality_status || "FAIL").toLowerCase()}`}>
+                  {result.quality_status || "FAIL"}
                 </span>
               </div>
 
               <div className="result-stats">
                 <div className="result-stat-item">
+                  <span className="stat-label">Category</span>
+                  <span className="stat-value">{result.defect_type || "Anomaly"}</span>
+                </div>
+
+                <div className="result-stat-item">
+                  <span className="stat-label">Severity Score</span>
+                  <span className="stat-value text-purple">{result.severity_score ?? 0} / 100</span>
+                </div>
+
+                <div className="result-stat-item">
                   <span className="stat-label">Model Confidence</span>
                   <span className="stat-value">{(result.confidence * 100).toFixed(1)}%</span>
-                </div>
-
-                <div className="result-stat-item">
-                  <span className="stat-label">Quality Score</span>
-                  <span className="stat-value">{result.quality_score}</span>
-                </div>
-
-                <div className="result-stat-item">
-                  <span className="stat-label">Inference Speed</span>
-                  <span className="stat-value">{result.processing_time_ms} ms</span>
                 </div>
               </div>
 
@@ -272,7 +272,7 @@ function Upload({ onViewDashboard, user }) {
                   className="btn btn-primary btn-block"
                   onClick={() => setShowReportModal(true)}
                 >
-                  📄 View Complete Inspection Report
+                  📄 View Complete Milestone 3 Inspection Report
                 </button>
                 <button
                   className="btn btn-secondary btn-block"

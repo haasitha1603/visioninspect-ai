@@ -1021,3 +1021,153 @@
   display: flex;
   justify-content: space-between;
 }
+
+/* Milestone 3 Analytics & Trend Monitoring */
+.analytics-section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .analytics-section-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analytics-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dist-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dist-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dist-label {
+  color: var(--text-main);
+}
+
+.dist-count {
+  font-weight: 700;
+}
+
+.trends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.trend-card-item {
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trend-date {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+}
+
+.trend-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.severity-framework-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  background-color: var(--bg-dark);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.severity-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-value-highlight {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.formula-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  background-color: var(--accent-purple-light);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(124, 93, 250, 0.2);
+}
+
+.recommendation-card {
+  border-left: 4px solid var(--accent-purple);
+}
+
+.recommendation-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommendation-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.banner-review {
+  background-color: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: var(--accent-amber);
+}
+
+.tag-review, .tag-medium {
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--accent-amber);
+}
+
+.tag-pass {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent-emerald);
+}
+
+.tag-fail, .tag-critical, .tag-high {
+  background: rgba(225, 29, 72, 0.12);
+  color: var(--accent-rose);
+}

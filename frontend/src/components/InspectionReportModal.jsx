@@ -4,6 +4,7 @@ const InspectionReportModal = ({ inspection, onClose }) => {
   if (!inspection) return null;
 
   const isAnomaly = inspection.prediction === "Anomaly";
+  const qualityStatus = inspection.quality_status || (isAnomaly ? "FAIL" : "PASS");
   const metrics = inspection.quality_metrics || {};
   const baseUrl = "http://127.0.0.1:8000";
 
@@ -22,12 +23,18 @@ const InspectionReportModal = ({ inspection, onClose }) => {
   const rawImgUrl = getImageUrl(inspection.image_path, inspection.image_url);
   const procImgUrl = getImageUrl(inspection.preprocessed_path, inspection.preprocessed_url);
 
+  const getStatusBannerClass = () => {
+    if (qualityStatus === "FAIL") return "banner-anomaly";
+    if (qualityStatus === "REVIEW") return "banner-review";
+    return "banner-normal";
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <span className="modal-subtitle">INSPECTION REPORT</span>
+            <span className="modal-subtitle">MILESTONE 3 MANUFACTURING INSPECTION REPORT</span>
             <h2 className="modal-title">Inspection #{inspection.id} — {inspection.image_name}</h2>
           </div>
           <button className="modal-close-btn" onClick={onClose}>×</button>
@@ -35,23 +42,23 @@ const InspectionReportModal = ({ inspection, onClose }) => {
 
         <div className="modal-body">
           {/* Top Status Banner */}
-          <div className={`status-banner ${isAnomaly ? "banner-anomaly" : "banner-normal"}`}>
+          <div className={`status-banner ${getStatusBannerClass()}`}>
             <div className="banner-badge">
               <span className="banner-indicator"></span>
-              {isAnomaly ? "DEFECT / ANOMALY DETECTED" : "PASS / NORMAL QUALITY"}
+              STATUS: {qualityStatus} ({inspection.prediction || "Normal"})
             </div>
             <div className="banner-meta">
-              <span>Confidence: <strong>{(inspection.confidence * 100).toFixed(1)}%</strong></span>
+              <span>Category: <strong>{inspection.defect_type || "None (Clean)"}</strong></span>
               <span>•</span>
-              <span>Speed: <strong>{inspection.processing_time_ms || 0} ms</strong></span>
+              <span>Severity Score: <strong>{inspection.severity_score ?? 0} / 100</strong></span>
               <span>•</span>
-              <span>Grade: <strong>{inspection.quality_score || "Good"}</strong></span>
+              <span>Level: <strong>{inspection.severity_level || "Low"}</strong></span>
             </div>
           </div>
 
-          {/* Image Comparison */}
+          {/* Section 1: Image Comparison */}
           <div className="report-section">
-            <h3 className="section-title">Image Comparison & Processing</h3>
+            <h3 className="section-title">1. Image Comparison & Preprocessing</h3>
             <div className="image-comparison-grid">
               <div className="image-card">
                 <div className="image-card-header">Raw Upload Image</div>
@@ -77,11 +84,10 @@ const InspectionReportModal = ({ inspection, onClose }) => {
             </div>
           </div>
 
-          {/* Quality Analysis & AI Metrics */}
+          {/* Section 2: Quantitative Quality Analysis & AI Diagnostics */}
           <div className="report-grid">
-            {/* Quality Metrics */}
             <div className="report-card">
-              <h3 className="section-title">Quantitative Image Quality Metrics</h3>
+              <h3 className="section-title">2. Image Quality Metrics</h3>
               <table className="report-table">
                 <tbody>
                   <tr>
@@ -123,9 +129,8 @@ const InspectionReportModal = ({ inspection, onClose }) => {
               </table>
             </div>
 
-            {/* AI Diagnostics */}
             <div className="report-card">
-              <h3 className="section-title">AI Computer Vision Diagnostics</h3>
+              <h3 className="section-title">3. AI Computer Vision Detection</h3>
               <div className="metric-box-container">
                 <div className="metric-box">
                   <span className="metric-label">AI Decision</span>
@@ -154,10 +159,57 @@ const InspectionReportModal = ({ inspection, onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* Section 3: Milestone 3 Defect Categorization & Severity Framework */}
+          <div className="report-card">
+            <h3 className="section-title">4. Defect Classification & Weighted Severity Framework</h3>
+            <div className="severity-framework-grid">
+              <div className="severity-metric-item">
+                <span className="stat-label">Defect Category</span>
+                <span className="stat-value-highlight">{inspection.defect_type || "None (Clean)"}</span>
+              </div>
+
+              <div className="severity-metric-item">
+                <span className="stat-label">Calculated Severity Score</span>
+                <span className="stat-value-highlight text-purple">{inspection.severity_score ?? 0} / 100</span>
+              </div>
+
+              <div className="severity-metric-item">
+                <span className="stat-label">Severity Level</span>
+                <span className={`status-tag tag-${(inspection.severity_level || "Low").toLowerCase()}`}>
+                  {inspection.severity_level || "Low"}
+                </span>
+              </div>
+
+              <div className="severity-metric-item">
+                <span className="stat-label">Risk Level</span>
+                <span className="stat-value-highlight">{inspection.risk_level || "Acceptable"}</span>
+              </div>
+            </div>
+
+            <div className="formula-note">
+              <strong>Official Severity Formula:</strong> (Defect Size × 30%) + (Defect Location × 25%) + (Defect Type × 25%) + (Confidence × 20%)
+            </div>
+          </div>
+
+          {/* Section 4: Quality Assessment & Recommendation */}
+          <div className="report-card recommendation-card">
+            <h3 className="section-title">5. Quality Decision & Recommended Action</h3>
+            <div className="recommendation-box">
+              <div className="recommendation-badge-wrap">
+                <span className={`status-tag tag-${qualityStatus.toLowerCase()}`}>
+                  QUALITY DECISION: {qualityStatus}
+                </span>
+              </div>
+              <p className="recommendation-text">
+                {inspection.recommendation || "Product quality acceptable — approve for production release."}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Close Report</button>
+          <button className="btn btn-secondary" onClick={onClose}>Close Inspection Report</button>
         </div>
       </div>
     </div>

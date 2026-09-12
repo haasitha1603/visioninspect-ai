@@ -61,7 +61,14 @@ class InspectionOut(BaseModel):
     quality_metrics: Optional[Dict[str, Any]] = None
     preprocessed_path: Optional[str] = None
     processing_time_ms: Optional[float] = None
+    defect_type: Optional[str] = None
+    severity_score: Optional[float] = None
+    severity_level: Optional[str] = None
+    risk_level: Optional[str] = None
+    quality_status: Optional[str] = None
+    recommendation: Optional[str] = None
     created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
