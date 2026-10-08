@@ -238,3 +238,4 @@ dataset/raw/
 dataset/processed/
 uploads/
 *.pkl
+.vercel
