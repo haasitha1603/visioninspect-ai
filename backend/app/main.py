@@ -1,3 +1,5 @@
+import os
+import tempfile
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,33 +29,45 @@ app.add_middleware(
 
 def auto_migrate_db():
     Base.metadata.create_all(bind=engine)
-    with engine.begin() as conn:
-        columns = [
-            ("prediction", "VARCHAR(100)"),
-            ("confidence", "FLOAT"),
-            ("quality_score", "VARCHAR(50)"),
-            ("quality_metrics", "JSON"),
-            ("preprocessed_path", "VARCHAR(500)"),
-            ("processing_time_ms", "FLOAT"),
-            ("processed_at", "TIMESTAMP WITH TIME ZONE"),
-            ("defect_type", "VARCHAR(100)"),
-            ("severity_score", "FLOAT"),
-            ("severity_level", "VARCHAR(50)"),
-            ("risk_level", "VARCHAR(50)"),
-            ("quality_status", "VARCHAR(50)"),
-            ("recommendation", "VARCHAR(255)")
-        ]
-        for col_name, col_type in columns:
-            try:
-                conn.execute(text(f"ALTER TABLE inspections ADD COLUMN IF NOT EXISTS {col_name} {col_type};"))
-            except Exception as e:
-                print(f"Column migration check note ({col_name}): {e}")
+    is_sqlite = engine.dialect.name == "sqlite"
+    if not is_sqlite:
+        with engine.begin() as conn:
+            columns = [
+                ("prediction", "VARCHAR(100)"),
+                ("confidence", "FLOAT"),
+                ("quality_score", "VARCHAR(50)"),
+                ("quality_metrics", "JSON"),
+                ("preprocessed_path", "VARCHAR(500)"),
+                ("processing_time_ms", "FLOAT"),
+                ("processed_at", "TIMESTAMP WITH TIME ZONE"),
+                ("defect_type", "VARCHAR(100)"),
+                ("severity_score", "FLOAT"),
+                ("severity_level", "VARCHAR(50)"),
+                ("risk_level", "VARCHAR(50)"),
+                ("quality_status", "VARCHAR(50)"),
+                ("recommendation", "VARCHAR(255)")
+            ]
+            for col_name, col_type in columns:
+                try:
+                    conn.execute(text(f"ALTER TABLE inspections ADD COLUMN IF NOT EXISTS {col_name} {col_type};"))
+                except Exception as e:
+                    print(f"Column migration check note ({col_name}): {e}")
 
 
 auto_migrate_db()
 
-UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
-UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+def get_uploads_dir():
+    is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
+    if is_vercel:
+        u_dir = Path(tempfile.gettempdir()) / "uploads"
+    else:
+        u_dir = Path(__file__).resolve().parent.parent / "uploads"
+    u_dir.mkdir(parents=True, exist_ok=True)
+    return u_dir
+
+
+UPLOADS_DIR = get_uploads_dir()
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.include_router(auth_router)

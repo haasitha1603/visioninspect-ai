@@ -4,7 +4,19 @@ import numpy as np
 from PIL import Image
 
 
-PROCESSED_DIR = Path(__file__).resolve().parents[2] / "uploads" / "processed"
+import os
+import tempfile
+
+def get_processed_dir():
+    is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
+    if is_vercel:
+        p_dir = Path(tempfile.gettempdir()) / "uploads" / "processed"
+    else:
+        p_dir = Path(__file__).resolve().parents[2] / "uploads" / "processed"
+    p_dir.mkdir(parents=True, exist_ok=True)
+    return p_dir
+
+PROCESSED_DIR = get_processed_dir()
 
 
 def preprocess_image_pipeline(image_path: str, output_filename: str = None) -> dict:
