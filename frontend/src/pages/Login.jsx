@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_BASE_URL } from "../config";
 
 const Login = ({ onLoginSuccess }) => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -14,7 +15,7 @@ const Login = ({ onLoginSuccess }) => {
     setMessage(null);
     setLoading(true);
 
-    const endpoint = isRegistering ? "http://127.0.0.1:8000/auth/register" : "http://127.0.0.1:8000/auth/login";
+    const endpoint = isRegistering ? `${API_BASE_URL}/auth/register` : `${API_BASE_URL}/auth/login`;
     const payload = isRegistering ? { name, email, password, role } : { email, password };
 
     try {

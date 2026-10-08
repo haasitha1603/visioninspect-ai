@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import InspectionReportModal from "../components/InspectionReportModal";
+import { API_BASE_URL } from "../config";
 
 function Dashboard({ onViewUpload, user, isSupervisor }) {
   const [inspections, setInspections] = useState([]);
@@ -16,9 +17,9 @@ function Dashboard({ onViewUpload, user, isSupervisor }) {
     setError(null);
     try {
       const [insRes, analyticsRes, trendsRes] = await Promise.all([
-        fetch("http://127.0.0.1:8000/inspections"),
-        fetch("http://127.0.0.1:8000/inspections/analytics/summary"),
-        fetch("http://127.0.0.1:8000/inspections/analytics/trends")
+        fetch(`${API_BASE_URL}/inspections`),
+        fetch(`${API_BASE_URL}/inspections/analytics/summary`),
+        fetch(`${API_BASE_URL}/inspections/analytics/trends`)
       ]);
 
       if (!insRes.ok) throw new Error("Failed to fetch inspection records");
@@ -81,7 +82,7 @@ function Dashboard({ onViewUpload, user, isSupervisor }) {
   });
 
   const getThumbnailUrl = (item) => {
-    const baseUrl = "http://127.0.0.1:8000";
+    const baseUrl = API_BASE_URL;
     if (item.image_url) {
       return item.image_url.startsWith("http") ? item.image_url : `${baseUrl}${item.image_url}`;
     }

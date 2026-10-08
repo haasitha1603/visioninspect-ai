@@ -1,4 +1,5 @@
 import React from "react";
+import { API_BASE_URL } from "../config";
 
 const InspectionReportModal = ({ inspection, onClose }) => {
   if (!inspection) return null;
@@ -6,7 +7,7 @@ const InspectionReportModal = ({ inspection, onClose }) => {
   const isAnomaly = inspection.prediction === "Anomaly";
   const qualityStatus = inspection.quality_status || (isAnomaly ? "FAIL" : "PASS");
   const metrics = inspection.quality_metrics || {};
-  const baseUrl = "http://127.0.0.1:8000";
+  const baseUrl = API_BASE_URL;
 
   const getImageUrl = (path, fallbackUrl) => {
     if (!path && !fallbackUrl) return null;

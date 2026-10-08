@@ -4,6 +4,8 @@ import Upload from "./pages/Upload";
 import Login from "./pages/Login";
 import "./App.css";
 
+import { API_BASE_URL } from "./config";
+
 function App() {
   const [page, setPage] = useState("dashboard");
   const [user, setUser] = useState(null);
@@ -21,8 +23,7 @@ function App() {
       }
     }
 
-    // Health check ping to FastAPI backend
-    fetch("http://127.0.0.1:8000/")
+    fetch(`${API_BASE_URL}/`)
       .then((res) => res.json())
       .then(() => setBackendHealthy(true))
       .catch(() => setBackendHealthy(false));

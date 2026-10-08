@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import InspectionReportModal from "../components/InspectionReportModal";
+import { API_BASE_URL } from "../config";
 
 function Upload({ onViewDashboard, user }) {
   const [file, setFile] = useState(null);
@@ -70,7 +71,7 @@ function Upload({ onViewDashboard, user }) {
       setTimeout(() => setStep(3), 600);
       setTimeout(() => setStep(4), 900);
 
-      const response = await fetch("http://127.0.0.1:8000/inspections/upload", {
+      const response = await fetch(`${API_BASE_URL}/inspections/upload`, {
         method: "POST",
         headers: headers,
         body: formData,
