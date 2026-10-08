@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import "./App.css";
 
 import { API_BASE_URL } from "./config";
+import { safeApiCall } from "./apiClient";
 
 function App() {
   const [page, setPage] = useState("dashboard");
@@ -23,8 +24,7 @@ function App() {
       }
     }
 
-    fetch(`${API_BASE_URL}/`)
-      .then((res) => res.json())
+    safeApiCall("/")
       .then(() => setBackendHealthy(true))
       .catch(() => setBackendHealthy(false));
   }, []);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import InspectionReportModal from "../components/InspectionReportModal";
 import { API_BASE_URL } from "../config";
+import { safeApiCall } from "../apiClient";
 
 function Dashboard({ onViewUpload, user, isSupervisor }) {
   const [inspections, setInspections] = useState([]);
@@ -16,29 +17,18 @@ function Dashboard({ onViewUpload, user, isSupervisor }) {
     setLoading(true);
     setError(null);
     try {
-      const [insRes, analyticsRes, trendsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/inspections`),
-        fetch(`${API_BASE_URL}/inspections/analytics/summary`),
-        fetch(`${API_BASE_URL}/inspections/analytics/trends`)
+      const [insData, aData, tData] = await Promise.all([
+        safeApiCall("/inspections"),
+        safeApiCall("/inspections/analytics/summary"),
+        safeApiCall("/inspections/analytics/trends")
       ]);
 
-      if (!insRes.ok) throw new Error("Failed to fetch inspection records");
-      
-      const insData = await insRes.json();
-      setInspections(insData);
-
-      if (analyticsRes.ok) {
-        const aData = await analyticsRes.json();
-        setAnalytics(aData);
-      }
-
-      if (trendsRes.ok) {
-        const tData = await trendsRes.json();
-        setTrends(tData);
-      }
+      setInspections(insData || []);
+      setAnalytics(aData || null);
+      setTrends(tData || []);
     } catch (err) {
       console.error("Error loading dashboard data:", err);
-      setError("Could not load inspection data. Ensure backend server is running.");
+      setError("Could not load inspection data.");
     } finally {
       setLoading(false);
     }

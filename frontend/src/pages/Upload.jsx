@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import InspectionReportModal from "../components/InspectionReportModal";
 import { API_BASE_URL } from "../config";
+import { safeApiCall } from "../apiClient";
 
 function Upload({ onViewDashboard, user }) {
   const [file, setFile] = useState(null);
@@ -71,23 +72,17 @@ function Upload({ onViewDashboard, user }) {
       setTimeout(() => setStep(3), 600);
       setTimeout(() => setStep(4), 900);
 
-      const response = await fetch(`${API_BASE_URL}/inspections/upload`, {
+      const data = await safeApiCall("/inspections/upload", {
         method: "POST",
         headers: headers,
         body: formData,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Upload failed");
-      }
-
       setResult(data);
       setStep(4);
     } catch (err) {
       console.error("Upload error:", err);
-      setErrorMessage(err.message || "Could not connect to VisionInspect API server.");
+      setErrorMessage(err.message || "Could not complete image inspection processing.");
       setStep(0);
     } finally {
       setLoading(false);

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { API_BASE_URL } from "../config";
+import { safeApiCall } from "../apiClient";
 
 const Login = ({ onLoginSuccess }) => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -15,21 +16,15 @@ const Login = ({ onLoginSuccess }) => {
     setMessage(null);
     setLoading(true);
 
-    const endpoint = isRegistering ? `${API_BASE_URL}/auth/register` : `${API_BASE_URL}/auth/login`;
+    const path = isRegistering ? "/auth/register" : "/auth/login";
     const payload = isRegistering ? { name, email, password, role } : { email, password };
 
     try {
-      const response = await fetch(endpoint, {
+      const data = await safeApiCall(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Authentication failed");
-      }
 
       if (isRegistering) {
         setMessage({ type: "success", text: "Registration successful! You can now log in." });
