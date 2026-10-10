@@ -28,7 +28,6 @@ services:
   - type: web
     name: visioninspect-web
     runtime: static
-    region: oregon
     plan: free
     branch: main
     rootDir: frontend
