@@ -73,14 +73,13 @@ function Dashboard({ onViewUpload, user, isSupervisor }) {
 
   const getThumbnailUrl = (item) => {
     const baseUrl = API_BASE_URL;
-    if (item.image_url) {
-      return item.image_url.startsWith("http") ? item.image_url : `${baseUrl}${item.image_url}`;
+    const raw = item.image_url || item.image_path;
+    if (!raw) return "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=100&auto=format&fit=crop&q=60";
+    if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) {
+      return raw;
     }
-    if (item.image_path) {
-      const filename = item.image_path.split(/[/\\]/).pop();
-      return `${baseUrl}/uploads/inspections/${filename}`;
-    }
-    return null;
+    const cleanPath = raw.startsWith("/") ? raw : `/${raw}`;
+    return baseUrl ? `${baseUrl}${cleanPath}` : cleanPath;
   };
 
   return (
@@ -356,11 +355,15 @@ function Dashboard({ onViewUpload, user, isSupervisor }) {
                       <td><strong>#{item.id}</strong></td>
                       <td>
                         <div className="table-thumb-container">
-                          {thumb ? (
-                            <img src={thumb} alt={item.image_name} className="table-thumb" />
-                          ) : (
-                            <div className="thumb-placeholder">IMG</div>
-                          )}
+                          <img
+                            src={thumb}
+                            alt={item.image_name}
+                            className="table-thumb"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=100&auto=format&fit=crop&q=60";
+                            }}
+                          />
                         </div>
                       </td>
                       <td>

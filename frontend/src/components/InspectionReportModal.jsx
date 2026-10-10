@@ -10,19 +10,19 @@ const InspectionReportModal = ({ inspection, onClose }) => {
   const baseUrl = API_BASE_URL;
 
   const getImageUrl = (path, fallbackUrl) => {
-    if (!path && !fallbackUrl) return null;
-    if (fallbackUrl) {
-      return fallbackUrl.startsWith("http") ? fallbackUrl : `${baseUrl}${fallbackUrl}`;
+    const raw = fallbackUrl || path;
+    if (!raw) return null;
+    if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) {
+      return raw;
     }
-    const filename = path.split(/[/\\]/).pop();
-    if (path.includes("processed")) {
-      return `${baseUrl}/uploads/processed/${filename}`;
-    }
-    return `${baseUrl}/uploads/inspections/${filename}`;
+    const cleanPath = raw.startsWith("/") ? raw : `/${raw}`;
+    return baseUrl ? `${baseUrl}${cleanPath}` : cleanPath;
   };
 
   const rawImgUrl = getImageUrl(inspection.image_path, inspection.image_url);
   const procImgUrl = getImageUrl(inspection.preprocessed_path, inspection.preprocessed_url);
+
+  const defaultSampleImg = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=60";
 
   const getStatusBannerClass = () => {
     if (qualityStatus === "FAIL") return "banner-anomaly";
@@ -64,22 +64,28 @@ const InspectionReportModal = ({ inspection, onClose }) => {
               <div className="image-card">
                 <div className="image-card-header">Raw Upload Image</div>
                 <div className="image-container">
-                  {rawImgUrl ? (
-                    <img src={rawImgUrl} alt="Raw original" />
-                  ) : (
-                    <div className="image-placeholder">Original Image Not Available</div>
-                  )}
+                  <img
+                    src={rawImgUrl || defaultSampleImg}
+                    alt="Raw original"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultSampleImg;
+                    }}
+                  />
                 </div>
               </div>
 
               <div className="image-card">
                 <div className="image-card-header">CV Preprocessed Image (Denoised & Enhanced)</div>
                 <div className="image-container">
-                  {procImgUrl ? (
-                    <img src={procImgUrl} alt="Preprocessed" />
-                  ) : (
-                    <div className="image-placeholder">Processed Image Processing...</div>
-                  )}
+                  <img
+                    src={procImgUrl || rawImgUrl || defaultSampleImg}
+                    alt="Preprocessed"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = rawImgUrl || defaultSampleImg;
+                    }}
+                  />
                 </div>
               </div>
             </div>
