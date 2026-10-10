@@ -25,8 +25,9 @@ services:
   # ----------------------------------------------------
   # VisionInspect AI - React + Vite Frontend Static Site
   # ----------------------------------------------------
-  - type: static_site
+  - type: web
     name: visioninspect-web
+    runtime: static
     region: oregon
     plan: free
     branch: main
