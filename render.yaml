@@ -1,0 +1,56 @@
+services:
+  # ----------------------------------------------------
+  # VisionInspect AI - FastAPI Backend Web Service
+  # ----------------------------------------------------
+  - type: web
+    name: visioninspect-api
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend"
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        fromDatabase:
+          name: visioninspect-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+
+  # ----------------------------------------------------
+  # VisionInspect AI - React + Vite Frontend Static Site
+  # ----------------------------------------------------
+  - type: static
+    name: visioninspect-web
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: visioninspect-api
+          property: host
+
+databases:
+  # ----------------------------------------------------
+  # Hosted PostgreSQL Database
+  # ----------------------------------------------------
+  - name: visioninspect-db
+    databaseName: visioninspect
+    user: visioninspect_user
+    plan: free
+    region: oregon

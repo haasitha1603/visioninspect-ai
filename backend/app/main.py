@@ -58,11 +58,7 @@ auto_migrate_db()
 
 
 def get_uploads_dir():
-    is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
-    if is_vercel:
-        u_dir = Path(tempfile.gettempdir()) / "uploads"
-    else:
-        u_dir = Path(__file__).resolve().parent.parent / "uploads"
+    u_dir = Path(__file__).resolve().parent.parent / "uploads"
     u_dir.mkdir(parents=True, exist_ok=True)
     return u_dir
 

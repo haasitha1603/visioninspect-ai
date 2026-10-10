@@ -9,11 +9,13 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
+# Render and older PostgreSQL clients may supply postgres:// which SQLAlchemy requires as postgresql://
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-if not DATABASE_URL or is_vercel:
-    # Use SQLite in temp directory for Vercel serverless environment or fallback
-    db_path = Path(tempfile.gettempdir()) / "visioninspect.db"
+if not DATABASE_URL:
+    # Use SQLite in local data directory for offline/local development
+    db_path = Path(__file__).resolve().parent.parent / "visioninspect.db"
     DATABASE_URL = f"sqlite:///{db_path}"
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
@@ -23,9 +25,10 @@ try:
     # Test connection
     with engine.connect() as conn:
         pass
-except Exception:
-    # Fallback to SQLite in temp directory if PostgreSQL server is unreachable
-    db_path = Path(tempfile.gettempdir()) / "visioninspect.db"
+except Exception as e:
+    # Fallback to local SQLite if PostgreSQL server is temporarily unreachable
+    print(f"PostgreSQL connection notice ({e}). Falling back to local SQLite engine...")
+    db_path = Path(__file__).resolve().parent.parent / "visioninspect.db"
     DATABASE_URL = f"sqlite:///{db_path}"
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 

@@ -27,11 +27,7 @@ import os
 import tempfile
 
 def get_upload_dir():
-    is_vercel = os.getenv("VERCEL") == "1" or "VERCEL" in os.environ
-    if is_vercel:
-        u_dir = Path(tempfile.gettempdir()) / "uploads" / "inspections"
-    else:
-        u_dir = Path(__file__).resolve().parents[2] / "uploads" / "inspections"
+    u_dir = Path(__file__).resolve().parents[2] / "uploads" / "inspections"
     u_dir.mkdir(parents=True, exist_ok=True)
     return u_dir
 
