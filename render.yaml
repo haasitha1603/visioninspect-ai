@@ -25,7 +25,7 @@ services:
   # ----------------------------------------------------
   # VisionInspect AI - React + Vite Frontend Static Site
   # ----------------------------------------------------
-  - type: static
+  - type: static_site
     name: visioninspect-web
     region: oregon
     plan: free
